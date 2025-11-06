@@ -1,11 +1,11 @@
 package environment
 
 type Environment struct {
-	x_size int
-	y_size int
+	x_size         int
+	y_size         int
 	x_charging_pos int
 	y_charging_pos int
-	grid [][]int
+	grid           [][]int
 }
 
 func NewEnvironment(x_size int, y_size int) Environment {

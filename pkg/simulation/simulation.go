@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"robot-offload/pkg/environment"
 	"robot-offload/pkg/fleet"
+	"robot-offload/pkg/task"
 )
 
 type Simulation struct {
@@ -16,11 +17,14 @@ type Simulation struct {
 
 func NewSimulation(epochs int, n_robots int, environment environment.Environment) *Simulation {
 	fmt.Println("Initializing simulation with", n_robots, "robots for", epochs, "epochs.")
+
+	taskSet := task.NewTaskSet(n_robots)
+
 	return &Simulation{
 		n_robots:    n_robots,
 		epochs:      epochs,
 		curr_epoch:  0,
-		fleet:       fleet.NewFleet(n_robots, environment),
+		fleet:       fleet.NewFleet(n_robots, environment, &taskSet),
 		environment: environment,
 	}
 }

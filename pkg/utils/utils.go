@@ -10,8 +10,8 @@ type Position struct {
 type Status string
 
 const (
-	StatusWorking    = "WORKING"
-	StatusCharging   = "CHARGING"
+	StatusWorking     = "WORKING"
+	StatusCharging    = "CHARGING"
 	StatusUnavailable = "UNAVAILABLE"
 )
 
