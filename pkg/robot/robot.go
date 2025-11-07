@@ -43,6 +43,10 @@ func NewRobot(name string, totalBattery int, env *environment.Environment, taskS
 	}
 }
 
+func (r *Robot) GetStatus() utils.Status {
+	return r.Status
+}
+
 func (r *Robot) Print() {
 	hostedTaskIDs := []int{}
 	for i := 0; i < len(r.taskSet.Tasks); i++ {

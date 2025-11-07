@@ -15,6 +15,33 @@ const (
 	StatusUnavailable = "UNAVAILABLE"
 )
 
+type SortOrder int
+
+const (
+	Descending SortOrder = iota
+	Ascending
+)
+
+func SortRobotsDescending(possibleOffloaders []struct{id string; batteryLeft int}) {
+	for i := 0; i < len(possibleOffloaders)-1; i++ {
+		for j := i + 1; j < len(possibleOffloaders); j++ {
+			if possibleOffloaders[i].batteryLeft < possibleOffloaders[j].batteryLeft {
+				possibleOffloaders[i], possibleOffloaders[j] = possibleOffloaders[j], possibleOffloaders[i]
+			}
+		}
+	}
+}
+
+func SortRobotsAscending(possibleOffloaders []struct{id string; batteryLeft int}) {
+	for i := 0; i < len(possibleOffloaders)-1; i++ {
+		for j := i + 1; j < len(possibleOffloaders); j++ {
+			if possibleOffloaders[i].batteryLeft > possibleOffloaders[j].batteryLeft {
+				possibleOffloaders[i], possibleOffloaders[j] = possibleOffloaders[j], possibleOffloaders[i]
+			}
+		}
+	}
+}
+
 var allStatuses = []Status{StatusWorking, StatusCharging, StatusUnavailable}
 
 func RandomStatus() Status {

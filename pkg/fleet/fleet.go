@@ -2,10 +2,10 @@ package fleet
 
 import (
 	"fmt"
-	"math/rand"
 	"robot-offload/pkg/environment"
 	"robot-offload/pkg/robot"
 	"robot-offload/pkg/task"
+	"robot-offload/pkg/utils"
 )
 
 type Fleet struct {
@@ -37,7 +37,61 @@ func (f *Fleet) Progress() {
 }
 
 func (f *Fleet) orchestrateTasks() {
-	for i := 0; i < len(f.taskSet.Tasks); i++ {
-		f.taskSet.Tasks[i].HostRobotID = fmt.Sprintf("robot-%d", rand.Intn(len(f.robots)))
+	availableRobotIDS := []int{}
+
+	for i := 0; i < len(f.robots); i++ {
+		rStatus := f.robots[i].GetStatus()
+		if rStatus == utils.StatusCharging {
+			count := 0
+			for j := 0; j < len(f.taskSet.Tasks); j++ {
+				task := &f.taskSet.Tasks[j]
+				if task.HostRobotID == f.robots[i].Name {
+					count++
+				}
+			}
+			if count < 2 {
+				availableRobotIDS = append(availableRobotIDS, i)
+			}
+		}
+	}
+
+	// find all robots that are in operation saving in a dedicated data structure the list containing for each robot the id and the remaining battery
+	possibleOffloaders := []struct {
+		id          string
+		batteryLeft int
+	}{}
+
+	for i := 0; i < len(f.robots); i++ {
+		rStatus := f.robots[i].GetStatus()
+		if rStatus == utils.StatusWorking {
+			batteryLeft := f.robots[i].CurrentBattery
+			id := f.robots[i].Name
+
+			count := 0
+			for j := 0; j < len(f.taskSet.Tasks); j++ {
+				task := &f.taskSet.Tasks[j]
+				if task.HostRobotID == f.robots[i].Name {
+					count++
+				}
+			}
+			if count == 2 {
+				possibleOffloaders = append(possibleOffloaders, struct {
+					id          string
+					batteryLeft int
+				}{id: id, batteryLeft: batteryLeft})
+			}
+		}
+	}
+
+	sortRobots(possibleOffloaders, utils.Descending)
+}
+
+func sortRobots(possibleOffloaders []struct{id string; batteryLeft int}, sortingType utils.SortOrder) {
+	if sortingType == utils.Descending {
+		utils.SortRobotsDescending(possibleOffloaders)
+	} else {
+		utils.SortRobotsAscending(possibleOffloaders)
 	}
 }
+
+
