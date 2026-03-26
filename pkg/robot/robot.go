@@ -56,12 +56,13 @@ func (r *Robot) Print() {
 		}
 	}
 	fmt.Printf("%s: Battery %d/%d, Position (%d, %d), Status %s, Hosted Tasks %v\n",
-		r.Name, r.CurrentBattery, r.TotalBattery, r.Position.X, r.Position.Y, r.Status, hostedTaskIDs) 
+		r.Name, r.CurrentBattery, r.TotalBattery, r.Position.X, r.Position.Y, r.Status, hostedTaskIDs)
 }
 
 func (r *Robot) Progress() {
 	// Example logic to update robot status and battery
-	if r.Status == utils.StatusWorking {
+	switch r.Status {
+	case utils.StatusWorking:
 		r.CurrentBattery -= r.consumptionRate
 
 		for i := 0; i < len(r.taskSet.Tasks); i++ {
@@ -76,21 +77,23 @@ func (r *Robot) Progress() {
 		}
 
 		r.move()
-	} else if r.Status == utils.StatusCharging {
+
+	case utils.StatusCharging:
 		r.CurrentBattery += r.rechargeRate
 		if r.CurrentBattery >= r.TotalBattery {
 			r.CurrentBattery = r.TotalBattery
 			r.Status = utils.StatusWorking
 
 			// unoffload tasks in case we're fully charged and ready for operation
-			for i := 0 ; i < len(r.taskSet.Tasks); i++ {
+			for i := 0; i < len(r.taskSet.Tasks); i++ {
 				task := &r.taskSet.Tasks[i]
 				if task.HostRobotID == r.Name {
 					task.HostRobotID = task.SourceRobotID
 				}
 			}
 		}
-	} else if r.Status == utils.StatusUnavailable {
+
+	case utils.StatusUnavailable:
 		r.moveTowardsChargingStation()
 	}
 
