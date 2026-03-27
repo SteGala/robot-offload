@@ -12,13 +12,17 @@ import (
 type Fleet struct {
 	robots  []robot.Robot
 	taskSet *task.TaskSet
+	sortingOrder utils.SortOrder
+	offloadingEnabled bool
 }
 
 // initialize fleet
-func NewFleet(n_robots int, env environment.Environment, taskSet *task.TaskSet, report_directory string) Fleet {
+func NewFleet(n_robots int, env environment.Environment, taskSet *task.TaskSet, report_directory string, sortingOrder utils.SortOrder, offloadingEnabled bool) Fleet {
 	f := Fleet{}
 	f.robots = []robot.Robot{}
 	f.taskSet = taskSet
+	f.sortingOrder = sortingOrder
+	f.offloadingEnabled = offloadingEnabled
 
 	// create the subdirectory robots inside the report directory
 	robotsReportDirectory := fmt.Sprintf("%s/robots", report_directory)
@@ -42,7 +46,9 @@ func (f *Fleet) Progress() {
 		f.robots[i].Progress()
 	}
 
-	f.orchestrateTasks()
+	if (f.offloadingEnabled) {
+		f.orchestrateTasks()
+	}
 }
 
 func (f *Fleet) orchestrateTasks() error {
@@ -98,7 +104,7 @@ func (f *Fleet) orchestrateTasks() error {
 	// }
 
 	if len(possibleOffloaders) > 0 {
-		sortRobots(possibleOffloaders, utils.Descending)
+		sortRobots(possibleOffloaders, f.sortingOrder)
 
 		for i := 0 ; i < min(len(availableRobotIDS), len(possibleOffloaders)) ; i++ {
 			availableRobotID := availableRobotIDS[i]

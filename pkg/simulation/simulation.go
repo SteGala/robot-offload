@@ -6,6 +6,7 @@ import (
 	"robot-offload/pkg/environment"
 	"robot-offload/pkg/fleet"
 	"robot-offload/pkg/task"
+	"robot-offload/pkg/utils"
 	"time"
 )
 
@@ -16,9 +17,10 @@ type Simulation struct {
 	fleet       fleet.Fleet
 	environment environment.Environment
 	report_directory string
+	offloadingEnabled bool
 }
 
-func NewSimulation(epochs int, n_robots int, environment environment.Environment) *Simulation {
+func NewSimulation(epochs int, n_robots int, environment environment.Environment, sortingOrder utils.SortOrder, offloadingEnabled bool) *Simulation {
 	fmt.Println("Initializing simulation with", n_robots, "robots for", epochs, "epochs.")
 
 	taskSet := task.NewTaskSet(n_robots)
@@ -35,9 +37,10 @@ func NewSimulation(epochs int, n_robots int, environment environment.Environment
 		n_robots:    n_robots,
 		epochs:      epochs,
 		curr_epoch:  0,
-		fleet:       fleet.NewFleet(n_robots, environment, taskSet, report_directory),
+		fleet:       fleet.NewFleet(n_robots, environment, taskSet, report_directory, sortingOrder, offloadingEnabled),
 		environment: environment,
 		report_directory: report_directory,
+		offloadingEnabled: offloadingEnabled,
 	}
 }
 
