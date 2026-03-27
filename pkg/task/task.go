@@ -22,12 +22,26 @@ func NewTask(id int, computation int, sourceRobotID string, hostRobotID string) 
 	}
 }
 
-func NewTaskSet(n_tasks int) TaskSet {
+func NewTaskSet(n_tasks int) *TaskSet {
 	tasks := make([]Task, n_tasks)
 	for i := 0; i < n_tasks; i++ {
 		tasks[i] = NewTask(i, 1, fmt.Sprintf("robot-%d", i), fmt.Sprintf("robot-%d", i))
 	}
-	return TaskSet{Tasks: tasks}
+	return &TaskSet{Tasks: tasks}
+}
+
+func (ts *TaskSet) GetRobotTask(robot_id string) (*Task, error) {
+	for j := 0; j < len(ts.Tasks); j++ {
+		task := &ts.Tasks[j]
+		if task.SourceRobotID == robot_id {
+			return task, nil
+		}
+	}
+	return &Task{}, fmt.Errorf("no task found for robot %s", robot_id)
+}
+
+func (t *Task) Offload(newHostRobotID string) {
+	t.HostRobotID = newHostRobotID
 }
 
 func (ts *TaskSet) Print() {

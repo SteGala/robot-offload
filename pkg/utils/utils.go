@@ -22,7 +22,19 @@ const (
 	Ascending
 )
 
-func SortRobotsDescending(possibleOffloaders []struct{id string; batteryLeft int}) {
+type RobotInfo struct {
+	Id          string
+	batteryLeft int
+}
+
+func NewRobotInfo(id string, batteryLeft int) RobotInfo {
+	return RobotInfo{
+		Id:          id,
+		batteryLeft: batteryLeft,
+	}
+}
+
+func SortRobotsDescending(possibleOffloaders []RobotInfo) {
 	for i := 0; i < len(possibleOffloaders)-1; i++ {
 		for j := i + 1; j < len(possibleOffloaders); j++ {
 			if possibleOffloaders[i].batteryLeft < possibleOffloaders[j].batteryLeft {
@@ -32,7 +44,7 @@ func SortRobotsDescending(possibleOffloaders []struct{id string; batteryLeft int
 	}
 }
 
-func SortRobotsAscending(possibleOffloaders []struct{id string; batteryLeft int}) {
+func SortRobotsAscending(possibleOffloaders []RobotInfo) {
 	for i := 0; i < len(possibleOffloaders)-1; i++ {
 		for j := i + 1; j < len(possibleOffloaders); j++ {
 			if possibleOffloaders[i].batteryLeft > possibleOffloaders[j].batteryLeft {

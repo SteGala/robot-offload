@@ -3,6 +3,7 @@ package robot
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"robot-offload/pkg/environment"
 	"robot-offload/pkg/task"
 	"robot-offload/pkg/utils"
@@ -19,6 +20,7 @@ type Robot struct {
 	consumptionRate   int
 	rechargeRate      int
 	taskSet           *task.TaskSet
+	reportFile        string
 }
 
 type Task struct {
@@ -28,7 +30,29 @@ type Task struct {
 	HostedBy    *Robot
 }
 
-func NewRobot(name string, totalBattery int, env *environment.Environment, taskSet *task.TaskSet) Robot {
+var report_header = "Battery,PositionX,PositionY,Status,HostedTasks\n"
+
+func NewRobot(name string, totalBattery int, env *environment.Environment, taskSet *task.TaskSet, reportFile string) Robot {
+	// create the csv report file for the robot
+	// if the file already exists, it should be overwritten
+	_, err := os.Create(reportFile)
+	if err != nil {
+		fmt.Println("Error creating report file for robot", name, ":", err)
+	}
+
+	// write the header
+	// the header should contain the following columns: Epoch, Battery, PositionX, PositionY, Status, HostedTasks, BatteryLevel
+	f, err := os.OpenFile(reportFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening report file for robot", name, ":", err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(report_header)
+	if err != nil {
+		fmt.Println("Error writing header to report file for robot", name, ":", err)
+	}
+
 	return Robot{
 		Name:              name,
 		TotalBattery:      totalBattery,
@@ -40,6 +64,7 @@ func NewRobot(name string, totalBattery int, env *environment.Environment, taskS
 		rechargeRate:      20,
 		chargingThreshold: 20,
 		taskSet:           taskSet,
+		reportFile:        reportFile,
 	}
 }
 
@@ -57,6 +82,32 @@ func (r *Robot) Print() {
 	}
 	fmt.Printf("%s: Battery %d/%d, Position (%d, %d), Status %s, Hosted Tasks %v\n",
 		r.Name, r.CurrentBattery, r.TotalBattery, r.Position.X, r.Position.Y, r.Status, hostedTaskIDs)
+}
+
+func (r *Robot) LogOnReportFile() {
+	// log the current state of the robot to the report file
+	hostedTaskIDs := []int{}
+	for i := 0; i < len(r.taskSet.Tasks); i++ {
+		task := r.taskSet.Tasks[i]
+		if task.HostRobotID == r.Name {
+			hostedTaskIDs = append(hostedTaskIDs, task.ID)
+		}
+	}
+
+	f, err := os.OpenFile(r.reportFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening report file for robot", r.Name, ":", err)
+		return
+	}
+	defer f.Close()
+
+	logLine := fmt.Sprintf("%d,%d,%d,%s,%v\n",
+		r.CurrentBattery, r.Position.X, r.Position.Y, r.Status, hostedTaskIDs)
+
+	_, err = f.WriteString(logLine)
+	if err != nil {
+		fmt.Println("Error writing log line to report file for robot", r.Name, ":", err)
+	}
 }
 
 func (r *Robot) Progress() {
@@ -97,7 +148,8 @@ func (r *Robot) Progress() {
 		r.moveTowardsChargingStation()
 	}
 
-	r.Print()
+	//r.Print()
+	r.LogOnReportFile()
 }
 
 func (r *Robot) moveTowardsChargingStation() {

@@ -7,6 +7,6 @@ import (
 
 func main() {
     environment := environment.NewEnvironment(20, 20)
-    sim := simulation.NewSimulation(30, 2, environment)   
+    sim := simulation.NewSimulation(30, 10, environment)   
 	sim.Run() 
 }
